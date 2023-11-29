@@ -1,14 +1,13 @@
 const prisma = require("../prisma/prismaClient")
 exports.createBooks = async (req, res) => {
     try {
-        const { bookName, description, summary, coverPage, status, userId,writerName } = req.body
+        const { bookName, description, summary, coverPage, status, userId } = req.body
         const dataBook = await prisma.books.create({
             data: {
                 bookName,
                 description,
                 summary,
                 coverPage,
-                writerName,
                 status,
                 authorName: {
                     connect: { id: userId }
@@ -75,8 +74,9 @@ exports.deletePost = async (req, res) => {
         const deleteData = await prisma.books.delete({
             where: { id: id }
         })
-        return res.send({ data: deleteData, msg: "data deleted successfully" })
-    } catch (error) {
+         if(deleteData)
+            return res.send({msg: "data deleted successfully" })
+         } catch (error) {
         return res.send(error.message)
     }
 }

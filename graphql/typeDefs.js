@@ -6,7 +6,6 @@ type books{
   description:String,
   summary :String,
   coverPage:String,
-  writerName:String
 }
 type Query{
   getBooksList:[books]
@@ -14,5 +13,31 @@ type Query{
   getBooksByUserId(userId: ID!):[books]
 
 }
+input editBooks{
+  bookName:String,
+  description:String,
+  summary :String,
+  coverPage:String,
+}
+type Mutation{
+  editBooks(id:ID!,editBooks:editBooks):Boolean!
+  addBooks(bookName: String,
+    description: String,
+    summary: String,
+    status:Int,
+    coverPage: String,
+  userId:ID!):books!
+  deleteBooks(id: ID!):Boolean!
+}
 
+type user{
+  username: String
+  mobileNo :String
+  email:String  
+  image:String
+}
+  type Query{
+  getUsersList:[user],
+  getUsers(id: ID!):user
+}
 `
