@@ -11,14 +11,14 @@ datasource db {
 }
 
 model user {
-  id       String  @id @default(auto()) @map("_id") @db.ObjectId
+  id       String   @id @default(auto()) @map("_id") @db.ObjectId
   username String
   mobileNo String
   password String
-  email    String  @unique
+  email    String   @unique
   status   String
   role     String
-  image    String
+  image   Json
   books    books[]
 }
 
@@ -29,6 +29,6 @@ model books {
   userId      String @db.ObjectId
   description String
   summary     String
-  coverPage   String
-  status      Int
+  coverPage   Json
+  status      String
 }

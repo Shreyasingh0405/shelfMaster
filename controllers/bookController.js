@@ -1,7 +1,12 @@
 const prisma = require("../prisma/prismaClient")
+const { uploadToAws } = require("../common/aws");
+const CONFIG = require("../config/config");
 exports.createBooks = async (req, res) => {
     try {
-        const { bookName, description, summary, coverPage, status, userId } = req.body
+        const { bookName, description, summary, status, userId } = req.body
+        let coverPage = req.files
+        console.log(coverPage)
+        coverPage = await uploadToAws("prisma", "bookprisma", coverPage)
         const dataBook = await prisma.books.create({
             data: {
                 bookName,

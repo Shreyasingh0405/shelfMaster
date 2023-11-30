@@ -1,7 +1,16 @@
 const prismaClient = require("../prisma/prismaClient")
+const { uploadToAws, getSignedUrl } = require("../common/aws");
+const CONFIG = require("../config/config");
+
 exports.userRegistration = async (req, res) => {
     try {
-        const { username, email, password, role, image, mobileNo, status } = req.body
+        const { username, email, password, role, mobileNo, status } = req.body
+        let image = req.files
+        // console.log(image)
+
+
+        image = await uploadToAws("prisma", "userprisma", image)
+
         const registerData = await prismaClient.user.create({
             data: {
                 username,
@@ -20,6 +29,7 @@ exports.userRegistration = async (req, res) => {
         }
     } catch (error) {
         console.log(error)
+        return;
     }
 }
 
@@ -27,10 +37,22 @@ exports.getBooks = async (req, res) => {
     try {
         const getData = await prismaClient.user.findMany()
         if (getData) {
+            {
+                getData[0].image = await Promise.all(
+                    getData[0].image.map(async (file) => {
+                        return {
+                            ...file,
+                            actualPath: file.href,
+                            href: await getSignedUrl(file.href),
+                        };
+                    })
+                );
+            }
             return res.send({ status: 1, msg: "data successfully found", data: getData })
         }
     } catch (error) {
         console.log(error)
+        return res.send({ status: 0, msg: error.message })
     }
 }
 
