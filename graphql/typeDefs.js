@@ -5,7 +5,11 @@ type books{
   bookName:String,
   description:String,
   summary :String,
-  coverPage:String,
+  coverPage: [CoverPage]
+}
+type CoverPage {
+  href: String,
+  name:String,
 }
 type Query{
   getBooksList:[books]

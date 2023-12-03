@@ -2,7 +2,7 @@ const { check, validationResult } = require("express-validator");
 
 const bookValidation = [
 	check("bookName").notEmpty().withMessage("bookName is required"),
-	check("userId").notEmpty().withMessage("userId is required"),
+	check("userId").notEmpty().isMongoId().withMessage("userId is required"),
 	check("description").notEmpty().withMessage(" description is required"),
 	check("summary").notEmpty().withMessage("summary is required"),
 
@@ -14,4 +14,4 @@ const bookValidation = [
 		return next();
 	},
 ];
-module.exports = { bookValidation}
+module.exports = {bookValidation}
