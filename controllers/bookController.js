@@ -1,5 +1,5 @@
 const prisma = require("../prisma/prismaClient")
-const { uploadToAws } = require("../common/aws");
+const { uploadToAws, deleteFile } = require("../common/aws");
 const CONFIG = require("../config/config");
 exports.createBooks = async (req, res) => {
     try {
@@ -33,27 +33,55 @@ exports.getBooksDataByUser = async (req, res) => {
             return res.send({ status: 1, msg: "get book data successfully", data: bookData })
         }
     } catch (error) {
-        console.log(error)
+        return res.send({ status: 0, msg: error.message })
     }
 }
 exports.getbookDataById = async (req, res) => {
     try {
         const { id } = req.body
+        if (!id) {
+            return res.send({ status: 0, msg: "UserId is required" })
+        }
         const getData = await prisma.books.findUnique({
             where: {
                 id: id
             }
         })
         if (getData) {
+            {
+                getData.coverPage = await Promise.all(
+                    getData.coverPage.map(async (file) => {
+                        return {
+                            ...file,
+                            actualPath: file.href,
+                            href: await getSignedUrl(file.href),
+                        };
+                    })
+                );
+            }
             return res.send({ status: 1, msg: "data get succesfully", data: getData })
         }
     } catch (error) {
-        console.log(error)
+        return res.send({ status: 0, msg: error.message })
     }
 }
 exports.updateBookData = async (req, res) => {
     try {
-        const { id, bookName, description, coverPage, summary } = req.body
+        const { id, bookName, description, summary } = req.body
+        let coverPage = req.files
+        const fileData = await prisma.books.findUnique({
+            where: {
+                id
+            },
+            select: {
+                coverPage: true
+            }
+        })
+        fileData.coverPage.map(async (ele) => {
+            await deleteFile(ele.href)
+        })
+
+        coverPage = await uploadToAws("prisma", "bookprisma", coverPage)
         const updateData = await prisma.books.updateMany({
             where: {
                 id: id
@@ -69,19 +97,22 @@ exports.updateBookData = async (req, res) => {
             return res.send({ status: 1, msg: "data updated successfully", data: updateData })
         }
     } catch (error) {
-        console.log(error)
+        return res.send({ status: 0, msg: error.message })
     }
 }
 
 exports.deletePost = async (req, res) => {
     try {
         const { id } = req.body
+        if (!id) {
+            return res.send({ status: 0, msg: "bookId is required" })
+        }
         const deleteData = await prisma.books.delete({
             where: { id: id }
         })
-         if(deleteData)
-            return res.send({msg: "data deleted successfully" })
-         } catch (error) {
+        if (deleteData)
+            return res.send({ msg: "data deleted successfully" })
+    } catch (error) {
         return res.send(error.message)
     }
 }
@@ -89,6 +120,9 @@ exports.deletePost = async (req, res) => {
 exports.getbooksByuserId = async (req, res) => {
     try {
         const { userId } = req.body
+        if (!id) {
+            return res.send({ status: 0, msg: "UserId is required" })
+        }
         const getData = await prisma.books.findMany({
             where: {
                 userId: userId
@@ -96,8 +130,10 @@ exports.getbooksByuserId = async (req, res) => {
         })
         if (getData) {
             return res.send({ status: 1, msg: "book data get successfully", data: getData })
+        } else {
+            return res.send({ status: 0, msg: "data not found" })
         }
     } catch (error) {
-        console.log(error)
+        return res.send({ status: 0, msg: error.message })
     }
 }
