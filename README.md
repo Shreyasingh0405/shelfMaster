@@ -40,4 +40,3 @@
 
 By integrating Prisma and GraphQL, we've ensured a smooth and optimized experience for handling data in our book management system! 🌍💡
 
-Feel free to use this in your project's README to maintain clarity and professionalism! 😊
